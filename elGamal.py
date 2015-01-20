@@ -106,19 +106,25 @@ class ElGamal(object):
         else:
             return False
 
-    def reencrypt_ddh(self,c1,c2):
+    def reencrypt_proof(self,c1,c2,randomness):
         '''
-        Prooves that re-encryption is correct using DDH
-        Proover needs to proove that the tuple 
-        (g,y,(r*B - r2*B), (m1+Pk*r) - (m2+Pk*r2)) is a valid DDH tuple
+        Prooves that re-encryption is correct.
+        y = x*B
+        B = basepoint
+        (alpha_1,beta_1) = (r * B, m + y * r) 
+        (alpha_2,beta_2) = (alpha_1+B*u,beta_1+B*u)
+        SO
+        alpha_2 - alpha_1 = beta_2 - beta_1 = u*B.
         '''
-        g = self.basePoint
+        B = self.basePoint
         y = self.Pk
-        _ = self.curve.inverse(c2.a)
-        w = self.curve.add(c1.a, _)
-        __ = self.curve.inverse(c2.b)
-        u = self.curve.add(c1.a, __)
-        return self.chaum_pedersen_ddh(g, y, w, u)
+        _ = self.curve.inverse(c1.a)
+        first = self.curve.add(c2.a, _)
+        __ = self.curve.inverse(c1.b)
+        second = self.curve.add(c2.b, __)
+        verify = self.curve.double_and_add(B, randomness)
+        verify_2 = self.curve.double_and_add(self.Pk.point, randomness)
+        return (first == verify and second == verify_2)
 
 class PrivateKey (object):
 
@@ -167,7 +173,7 @@ if __name__ == "__main__":
     re_cipher,fresh_randomness = Alice.reencrypt(cipher)
     # print cipher
     print "\n===== VERIFY Reencrypt ======\n"
-    print Alice.reencrypt_ddh(cipher,re_cipher)
+    print Alice.reencrypt_proof(cipher,re_cipher,fresh_randomness)
     print "\n===== DECRYPTION ======\n"
     plain = Alice.decrypt(re_cipher)
     print "plain text was", point, " i got ", plain, point==plain
