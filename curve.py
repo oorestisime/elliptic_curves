@@ -13,7 +13,7 @@ Coord = collections.namedtuple("Coord", ["x", "y"])
 
 class Curve(object):
 
-    def __init__(self, a, b, q):
+    def __init__(self, a, b, q,order):
         pass
 
     def at(self, x, sbit):
@@ -37,7 +37,7 @@ class Curve(object):
 
 class Weierstrass(Curve):
 
-    def __init__(self, a, b, q):
+    def __init__(self, a, b, q,order):
         """elliptic curve as: (y**2 = x**3 + a * x + b) mod q
         - a, b: params of curve formula
         - q: prime number
@@ -47,6 +47,7 @@ class Weierstrass(Curve):
         self.a = a
         self.b = b
         self.q = q
+        self.order = order
 
     def at(self, x, sbit):
         """find coordinate of a point at x
@@ -56,6 +57,9 @@ class Weierstrass(Curve):
         assert x < self.q
         ysq = (x ** 3 + self.a * x + self.b) % self.q
         root = tools.mod_sqrt(ysq, self.q)
+        if root == 0:
+            print "no point at this x coordinate"
+            return -1
         return Coord(x, root) if sbit is True else Coord(x, -root % self.q)
 
     def add(self, P, Q):
@@ -141,7 +145,7 @@ class Weierstrass(Curve):
 
 class Montgomery(Curve):
 
-    def __init__(self, a, b, q):
+    def __init__(self, a, b, q,order):
         """
         elliptic curve in the Montgomert form:
         (b*y**2 = x**3 +A x**2 +x mod q
@@ -151,6 +155,7 @@ class Montgomery(Curve):
         self.a = a
         self.b = b
         self.q = q
+        self.order = order
 
     def at(self, x, sbit):
         """
@@ -162,6 +167,10 @@ class Montgomery(Curve):
         ysq = (((x ** 3) + (self.a * x**2) + x)
         * tools.inversemodp(self.b, self.q)) % self.q
         root = tools.mod_sqrt(ysq, self.q)
+        # print root
+        if root == 0:
+            #print "no point at this x coordinate"
+            return -1
         return Coord(x, root) if sbit is True else Coord(x, -root % self.q)
 
     def add(self, P, Q):
@@ -246,7 +255,7 @@ class Montgomery(Curve):
 
 class Edwards(object):
 
-    def __init__(self, d, a, q):
+    def __init__(self, d, a, q,order):
         '''
         Edwards curve: ax^2 + y^2 = 1 + dx^2y^2
         q: prime number
@@ -256,6 +265,7 @@ class Edwards(object):
         self.d = d
         self.q = q
         self.a = a
+        self.order = order
 
     def at(self, x, sbit):
         """
@@ -264,10 +274,14 @@ class Edwards(object):
         y^2 = (1 - x^2) / (a - dx^2 )
         """
         xx = (x * x) % self.q
-        nom = (1 - xx) % self.q
+        num = (1 - xx) % self.q
         denom = (self.a - (self.d * xx)) % self.q
-        yy = (nom * tools.inversemodp(denom, self.q)) % self.q
+        yy = (num * tools.inversemodp(denom, self.q)) % self.q
+        # print "y2 = ",yy
         root = tools.mod_sqrt(yy, self.q)
+        if root == 0:
+            #print "no point at this x coordinate"
+            return -1
         return Coord(x, root) if sbit is True else Coord(x, -root % self.q)
 
     def add(self, P, Q):
@@ -318,13 +332,13 @@ class Edwards(object):
         binary = list(bin(n)[2:])
         r = Coord(0, 1)
         for item in binary:
-            # print "will double",r
+            # print "will double",r,self.is_valid(r)
             r = self.double(r)
-            # print "result",r,self.is_valid(r)
+            # print "result",r
             if (item == "1"):
                 # print "will add",r,P
                 r = self.add(r, P)
-                # print "result",r,self.is_valid(r)
+                # print "result",r
         return r
 
     def inverse(self, P):

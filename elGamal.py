@@ -4,6 +4,8 @@ import tools as tools
 import curve as ecc
 import timeit as time
 import texts as texts
+import math as math
+import hashlib
 Coord = collections.namedtuple("Coord", ["x", "y"])
 
 
@@ -29,9 +31,13 @@ class ElGamal(object):
         print " Generating basepoint... \n "
         while self.curve.is_valid(Coord(x, y)) is False or (x == 0 and y == 0):
             x = random.randint(1, self.curve.q - 1)
-            y = self.curve.at(x, True)[1]
-            tmp = random.randint(1, self.curve.q - 1)
-            x, y = self.curve.double_and_add(Coord(x, y), tmp)
+            point = self.curve.at(x, True)
+            if point is not -1:
+                tmp = random.randint(1, self.curve.q - 1)
+                x, y = self.curve.double_and_add(point, tmp)
+            else:
+                x=0
+                y=0
 
         return Coord(x, y)
 
@@ -39,7 +45,7 @@ class ElGamal(object):
         '''
         Generating a KeySet (Public and Private Key)
         '''
-        self.Sk = PrivateKey(self.curve.q)
+        self.Sk = PrivateKey(self.curve.order)
         self.Pk = PublicKey(self.curve, self.Sk, self.basePoint)
 
     def encrypt(self, P):
@@ -47,7 +53,7 @@ class ElGamal(object):
         Encrypt a point P
         '''
         assert self.curve.is_valid(P) is True, "Trying to encrypt point not on curve"
-        r = random.randint(1, self.curve.q - 1)
+        r = random.randint(1, self.curve.order)
         R = self.curve.double_and_add(self.basePoint, r)
         __ = self.curve.double_and_add(self.Pk.point, r)
         cipher = self.curve.add(P, __)
@@ -76,7 +82,7 @@ class ElGamal(object):
         C: P + B*r*s + B*r2*s = P + B*s*(r+r2)
         '''
         R, c, pok = Cipher.getCipher()
-        r = random.randint(1, self.curve.q - 1)
+        r = random.randint(1, self.curve.order)
         R2 = self.curve.add(R, self.curve.double_and_add(self.basePoint, r))
         __ = self.curve.double_and_add(self.Pk.point, r)
         cipher2 = self.curve.add(__, c)
@@ -91,11 +97,13 @@ class ElGamal(object):
 
         easily converted in disjunctive proove using fiat-shamir heuristic
         '''
-        s = random.randint(1, self.curve.q - 1)
+        s = random.randint(1, self.curve.order)
         a = self.curve.double_and_add(g, s)
         b = self.curve.double_and_add(y, s)
-        c = random.randint(1, self.curve.q - 1)
-        t = (s + c * r)
+        hash_object = hashlib.sha512(str(a.x))
+        hex_dig = hash_object.hexdigest()
+        c = long(hex_dig, 16) % self.curve.q
+        t = (s + c * r) % self.curve.order
         left_hand = self.curve.double_and_add(g, t)
         right_hand = self.curve.add(a, self.curve.double_and_add(w, c))
         left_hand2 = self.curve.double_and_add(y, t)
@@ -104,6 +112,8 @@ class ElGamal(object):
             print "DDH verified"
             return True
         else:
+            print left_hand == right_hand
+            print left_hand2 == right_hand2
             return False
 
     def reencrypt_proof(self,c1,c2,randomness):
@@ -117,14 +127,39 @@ class ElGamal(object):
         alpha_2 - alpha_1 = beta_2 - beta_1 = u*B.
         '''
         B = self.basePoint
-        y = self.Pk
+        y = self.Pk.point
         _ = self.curve.inverse(c1.a)
         first = self.curve.add(c2.a, _)
         __ = self.curve.inverse(c1.b)
         second = self.curve.add(c2.b, __)
-        verify = self.curve.double_and_add(B, randomness)
-        verify_2 = self.curve.double_and_add(self.Pk.point, randomness)
-        return (first == verify and second == verify_2)
+        return self.chaum_pedersen_ddh(B,y,first,second,randomness)
+
+    def baby_step_giant_step(self,Q,l):
+        '''
+        Baby step giant step. find x such as Q=xP
+        '''
+        P = self.basePoint
+        root = long(math.ceil(math.sqrt(l)))
+        print "gen ",P
+        i = 0
+        verify = list()
+        while i<root:
+            __ = self.curve.inverse(self.curve.double_and_add(P,i*root))
+            verify.append(self.curve.add(Q,__))
+            i+=1
+        print "first while!"
+        found = False
+        i = 1
+        while not found and i<root:
+            print i,root
+            key = self.curve.double_and_add(P,i)
+            print key 
+            if (key in verify):
+                print key,i
+                return (i+root*verify.index(key))%self.q
+            i+=1
+        return "Not found"
+
 
 class PrivateKey (object):
 
@@ -153,48 +188,56 @@ class PublicKey (object):
     def __str__(self):
         return "Public Key: {:d} , {:d} ".format(self.point.x, self.point.y)
 
-if __name__ == "__main__":
-    q = 2**414 - 17
+if __name__ == "__main__": 
     '''
     Edwards testing
     '''
-    curve = ecc.Edwards(3617, 1, q)
+    q =  2**521 - 1 
+    a = 1716199415032652428745475199770348304317358825035826352348615864796385795849413675475876651663657849636693659065234142604319282948702542317993421293670108523
+    curve = ecc.Edwards((-376014%q), 1, q,a)
     # print tools.jacobi(3617,(2**414 - 17))
-    point = curve.at(80, True)
+    point = curve.at(102,True)
+    print point
+    #print curve.double_and_add(point,a)
+    
     Alice = ElGamal(curve)
-    start_time = time.default_timer()
+    #start_time = time.default_timer()
     # print "Alice: ", Alice.Pk
     print "\n===== ENCRYPTION ======\n"
     cipher,randomness = Alice.encrypt(point)
-    # print cipher
-    print "\n===== VERIFY DDH ======\n"
-    print Alice.chaum_pedersen_ddh(Alice.basePoint, Alice.Pk.point, cipher.a, cipher.pok, randomness)
     print "\n===== RE_ECRYPTION ======\n"
     re_cipher,fresh_randomness = Alice.reencrypt(cipher)
-    # print cipher
     print "\n===== VERIFY Reencrypt ======\n"
     print Alice.reencrypt_proof(cipher,re_cipher,fresh_randomness)
     print "\n===== DECRYPTION ======\n"
     plain = Alice.decrypt(re_cipher)
     print "plain text was", point, " i got ", plain, point==plain
-    elapsed = time.default_timer() - start_time
-    print"---",elapsed," seconds ---"
-
+    #elapsed = time.default_timer() - start_time
+    #print"---",elapsed," seconds ---"
+    
     '''
     Montgomery
     '''
-    '''curve = ecc.Montgomery(7,1,q)
-    point = curve.at(80,True)
-    print point
+    '''q = 2**221 - 3
+    l = 3369993333393829974333376885877457343415160655843170439554680423128
+    curve = ecc.Montgomery(117050,1,q,l)
+    #Alice = ElGamal(curve)
+    point = curve.at(14,True)
+    #print point
+    #check = curve.double_and_add(point,10**6)
+    #print tools.mod_sqrt(l-1,q)
+    #print Alice.baby_step_giant_step(check,q)
+    #print curve.double_and_add(point,l)
+    #print tools.mod_sqrt(l,q)
     Alice = ElGamal(curve)
     print "Alice: ", Alice.Pk
-    print "Secret: ",Alice.Sk
     print "\n\n\n===== ENCRYPTION ======\n\n\n"
-    cipher = Alice.encrypt(point)
+    cipher = Alice.encrypt(point)[0]
     print cipher
     print "\n===== RE_ECRYPTION ======\n"
-    cipher = Alice.reencrypt(cipher)
-    print cipher
+    re_cipher,fresh_randomness = Alice.reencrypt(cipher)
+    print "\n===== VERIFY Reencrypt ======\n"
+    print Alice.reencrypt_proof(cipher,re_cipher,fresh_randomness)
     print "\n===== DECRYPTION ======\n"
-    plain = Alice.decrypt(cipher)
-    print "plain text was", point, " i got ", plain'''
+    plain = Alice.decrypt(re_cipher)
+    print "plain text was", point, " i got ", plain, point==plain'''
