@@ -75,12 +75,14 @@ class Weierstrass(Curve):
                 solve linear equation between line and elliptic curve
         '''
         # print P ," and", Q
-        if P.x == 0 and (P.y == 0 or P.y == 1):
+        if (P.y == -1 and P.y == -1):
             return Q
-        elif Q.x == 0 and (Q.y == 0 or Q.y == 1):
+        elif (Q.y == -1 and Q.y == -1):
             return P
         elif P.x == Q.x and P.y == Q.y:
             return self.double(P)
+        elif P == self.inverse(Q):
+            return Coord(-1,-1)
         else:
             inv = tools.inversemodp(Q.x - P.x, self.q)
             pente = ((Q.y - P.y) * inv) % self.q
@@ -111,9 +113,9 @@ class Weierstrass(Curve):
         2 * (0,1) = (0,1)
         '''
         # print P, self.is_valid(P)
-        if P.x is 0 and P.y is 1:
+        if P.x is -1 and P.y is -1:
             # print P
-            return Coord(0, 1)
+            return Coord(-1, -1)
         pente = ((3 * pow(P.x, 2) + self.a)
                  * tools.inversemodp(2 * P.y, self.q)) % self.q
         if (pente is 0 and P.y is 0 and P.x is not 0):
@@ -132,11 +134,15 @@ class Weierstrass(Curve):
         of number n
         '''
         binary = list(bin(n)[2:])
-        r = Coord(0, 0)
+        r = Coord(-1, -1)
         for item in binary:
+            # print "will double",r,self.is_valid(r)
             r = self.double(r)
+            # print "result",r
             if (item == "1"):
+                # print "will add",r,P
                 r = self.add(r, P)
+                # print "result",r
         return r
 
     def inverse(self, P):

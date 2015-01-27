@@ -61,22 +61,22 @@ modular inverse
 '''
 
 
-def generalizedEuclidianAlgorithm(a, modulo):
-    if modulo > a:
-        return generalizedEuclidianAlgorithm(modulo, a)
-    elif modulo == 0:
-        return (1, 0)
-    else:
-        (x, y) = generalizedEuclidianAlgorithm(modulo, a % modulo)
-        return (y, x - (a / modulo) * y)
+def extended_gcd(aa, bb):
+    lastremainder, remainder = abs(aa), abs(bb)
+    x, lastx, y, lasty = 0, 1, 1, 0
+    while remainder:
+        lastremainder, (quotient, remainder) = remainder, divmod(
+            lastremainder, remainder)
+        x, lastx = lastx - quotient * x, x
+        y, lasty = lasty - quotient * y, y
+    return lastremainder, lastx * (-1 if aa < 0 else 1), lasty * (-1 if bb < 0 else 1)
 
 
-def inversemodp(a, modulo):
-    a = a % modulo
-    if (a == 0):
-        return 0
-    (x, y) = generalizedEuclidianAlgorithm(modulo, a % modulo)
-    return y % modulo
+def inversemodp(a, m):
+    g, x, y = extended_gcd(a, m)
+    if g != 1:
+        raise ValueError
+    return x % m
 
 '''
 Modular square root!
@@ -127,21 +127,6 @@ def mod_sqrt(a, p):
     while legendre_symbol(n, p) != -1:
         n += 1
 
-    # Here be dragons!
-    # Read the paper "Square roots from 1; 24, 51,
-    # 10 to Dan Shanks" by Ezra Brown for more
-    # information
-    #
-
-    # x is a guess of the square root that gets better
-    # with each iteration.
-    # b is the "fudge factor" - by how much we're off
-    # with the guess. The invariant x^2 = ab (mod p)
-    # is maintained throughout the loop.
-    # g is used for successive powers of n to update
-    # both a and b
-    # r is the exponent - decreases with each update
-    #
     x = pow(a, (s + 1) / 2, p)
     b = pow(a, s, p)
     g = pow(n, s, p)
@@ -176,3 +161,23 @@ def legendre_symbol(a, p):
     """
     ls = pow(a, (p - 1) / 2, p)
     return -1 if ls == p - 1 else ls
+
+
+def which_group(R, a_b, q):
+    '''
+    A method for determining in which group is a point.
+    Used for pollard rho algorithm. 
+
+    Returns the new a and b used for calculating next point
+    '''
+    if R.y < q / 3:
+        _a = a_b[0]
+        _b = a_b[1] + 1
+    elif R.y >= q / 3 and R.y < (2 * q / 3):
+        _a = (2 * a_b[0]) % q
+        _b = (2 * a_b[1]) % q
+    else:
+        _a = a_b[0] + 1
+        _b = a_b[1]
+    return _a, _b
+
