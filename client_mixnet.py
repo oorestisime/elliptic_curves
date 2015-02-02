@@ -1,20 +1,50 @@
 #!/usr/bin/python
 from websocket import create_connection
 import json
+import collections
 import elGamal as ecdlp
 import curve as ecc
-import cPickle as pickle
+import zkp as zkp
+import texts as texts
 
+Coord = collections.namedtuple("Coord", ["x", "y"])
+
+def get_list():
+    '''
+    Getting first a public key and then a list of votes
+    '''
+    __ = ws.recv()
+    Pk = json.loads(__, object_hook = pk_decoder)
+    __ = ws.recv()
+    votes = json.loads(__, object_hook = cipher_decoder)
+    return Pk, votes
+
+
+def anonymize():
+    '''
+    Getting a list, then mixing in public 
+    and returning the result
+    '''
+    ws.send("Waiting")
+    Pk, votes = get_list()
+    #mixed = zkp.public_mixing(curve, votes, Pk)
+    ws.send(json.dumps([cipher.__dict__ for cipher in votes]))
+
+def cipher_decoder(obj):
+    a = Coord(obj['a'][0],obj['a'][1])
+    b = Coord(obj['b'][0],obj['b'][1])
+    return texts.CipherText([a,b])
+
+def pk_decoder(obj):
+    p = Coord(obj['point'][0],obj['point'][1])
+    b = Coord(obj['basePoint'][0],obj['basePoint'][1])
+    return ecdlp.PublicKey(b,p)
+
+        
+q = 2 ** 221 - 3
+l = 3369993333393829974333376885877457343415160655843170439554680423128
+curve = ecc.Montgomery(117050, 1, q, l)
 ws = create_connection("ws://localhost:8000/ws")
-print "Sending 'Hello, World'..."
-ws.send("Hello, World")
-print "Sent"
-print "Reeiving..."
-result =  ws.recv()
-print "Received '%s'" % result
-result =  ws.recv()
-Alice = pickle.loads(result)
-print "Received",Alice
-print Alice.Pk 
 
+anonymize()
 ws.close()

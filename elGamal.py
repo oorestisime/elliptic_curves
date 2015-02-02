@@ -47,7 +47,7 @@ class ElGamal(object):
         Generating a KeySet (Public and Private Key)
         '''
         self.Sk = PrivateKey(self.curve.order)
-        self.Pk = PublicKey(self.curve, self.Sk, self.basePoint)
+        self.Pk = PublicKey(self.basePoint, self.curve.double_and_add(self.basePoint, self.Sk.k))
 
     def encrypt(self, P):
         '''
@@ -65,7 +65,7 @@ class ElGamal(object):
         '''
         Decrypt a cipher text
         '''
-        R, c, __ = Cipher.getCipher()
+        R, c = Cipher.getCipher()
         S = self.curve.double_and_add(R, self.Sk.k)
         invPoint = self.curve.inverse(S)
         plaintext = self.curve.add(invPoint, c)
@@ -90,7 +90,8 @@ class ElGamal(object):
         i = 0
         while self.curve.double_and_add(self.Pk.basePoint,i) != plain:
             i+=1
-        print "\nThe candidate 1 has, ",i," votes out of ",len(votes),"\n"
+        return i
+        
 
 
 class PrivateKey (object):
@@ -114,12 +115,13 @@ class PublicKey (object):
     It contains a point which comes from k*Basepoint and the Basepoint
     '''
 
-    def __init__(self, c, s, b):
+    def __init__(self, b,p):
         self.basePoint = b
-        self.point = c.double_and_add(b, s.k)
+        self.point = p
 
     def __str__(self):
         return "Public Key: {:d} , {:d} ".format(self.point.x, self.point.y)
+
 
 if __name__ == "__main__":
     '''

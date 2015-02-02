@@ -7,8 +7,9 @@ import tornado.template
 import elGamal as ecdlp
 import curve as ecc
 import tools as tools
-import cPickle as pickle
+import texts as texts
 import collections
+import json
 Coord = collections.namedtuple("Coord", ["x", "y"])
 
 
@@ -19,17 +20,29 @@ class MainHandler(web.RequestHandler):
         self.write("hello from tornado")
 
 
+
 class WSHandler(websocket.WebSocketHandler):
 
     def open(self):
         print 'connection opened...'
-        self.write_message(
-            "The server says: 'Hello'. Connection was accepted.")
+        #self.write_message(
+            #"The server says: 'Hello'. Connection was accepted.")
 
     def on_message(self, message):
-        # self.write_message("The server says: " + message + " back at you")
-        self.write_message(pickle.dumps(Alice))
         print 'received:', message
+        if message == "Waiting":
+            print "sending"
+            self.write_message(json.dumps(Alice.Pk.__dict__))
+            retrieved = tools.retrieve_list("test")
+            self.write_message(json.dumps([cipher.__dict__ for cipher in retrieved]))
+        else:
+            votes = json.loads(message, object_hook = cipher_decoder)
+            #print votes
+            tally = Alice.tallying(votes)
+            print "searching"
+            #print Alice.find_solution(Alice.decrypt(tally))
+            print "\nThe candidate 1 has, ",Alice.find_solution(Alice.decrypt(tally))," votes out of ",len(votes),"\n"
+            #print votes
 
     def on_close(self):
         print 'connection closed...'
@@ -43,10 +56,14 @@ application = web.Application([
     (r".*", web.FallbackHandler, dict(fallback=tr)),
 ])
 
+def cipher_decoder(obj):
+    a = Coord(obj['a'][0],obj['a'][1])
+    b = Coord(obj['b'][0],obj['b'][1])
+    return texts.CipherText([a,b])
+
 
 @app.route('/testing')
 def hello_world():
-    Alice = ecdlp.ElGamal(curve)
     vote1 = Alice.basePoint
     vote2 = Coord(-1,-1)
     votes = list()
@@ -75,4 +92,5 @@ if __name__ == "__main__":
     q = 2 ** 221 - 3
     l = 3369993333393829974333376885877457343415160655843170439554680423128
     curve = ecc.Montgomery(117050, 1, q, l)
+    Alice = ecdlp.ElGamal(curve)
     tornado.ioloop.IOLoop.instance().start()
