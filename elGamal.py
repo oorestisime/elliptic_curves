@@ -59,7 +59,7 @@ class ElGamal(object):
         R = self.curve.double_and_add(self.basePoint, r)
         __ = self.curve.double_and_add(self.Pk.point, r)
         cipher = self.curve.add(P, __)
-        return texts.CipherText([R, cipher, __]), r
+        return texts.CipherText([R, cipher]), r
 
     def decrypt(self, Cipher):
         '''
@@ -81,7 +81,7 @@ class ElGamal(object):
         for cipher in votes:
             _b = self.curve.add(_b,cipher.b)
             _a = self.curve.add(_a,cipher.a)
-        return texts.CipherText([_a,_b,None]) 
+        return texts.CipherText([_a,_b]) 
 
     def find_solution(self,plain):
         '''

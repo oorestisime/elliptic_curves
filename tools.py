@@ -1,4 +1,6 @@
 import random
+import pickle
+import os
 
 '''
 Tools for prime numbers
@@ -181,4 +183,29 @@ def which_group(R, a_b, q):
         _b = a_b[1]
     return _a, _b
 
+def create_file(name):
+    '''
+    Creating folder and file inside elections. 
+    Storing inside the ciphertexts
+    '''
+    directory = "./elections/"+name
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+    new_file = open("./elections/"+name+"/db.txt", 'w+')
+    new_file.close
+
+def save_list(ciphers,directory):
+    '''
+    Adding a ciphertext inside the db
+    '''
+    output = open("./elections/"+directory+"/db.txt", 'w+')
+    pickle.dump(ciphers,output)
+    output.close() 
+
+def retrieve_list(directory):
+    '''
+    read a file and deserialize
+    '''
+    infile = open("./elections/"+directory+"/db.txt", 'r')
+    return pickle.load(infile)
 

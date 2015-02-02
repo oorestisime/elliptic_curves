@@ -15,12 +15,12 @@ def reencrypt(curve, Cipher, Pk):
         R: r*B+r2*B = B(r+r2)
         C: P + B*r*s + B*r2*s = P + B*s*(r+r2)
         '''
-        R, c, pok = Cipher.getCipher()
+        R, c = Cipher.getCipher()
         r = random.randint(1, curve.order)
         R2 = curve.add(R, curve.double_and_add(Pk.basePoint, r))
         __ = curve.double_and_add(Pk.point, r)
         cipher2 = curve.add(__, c)
-        return texts.CipherText([R2, cipher2, __]), r
+        return texts.CipherText([R2, cipher2]), r
 
 def chaum_pedersen_ddh(curve, Pk, w, u, r):
     '''

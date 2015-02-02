@@ -18,10 +18,9 @@ class CipherText(object):
 	def __init__(self, tuple):
 		self.a = tuple[0]
 		self.b = tuple[1]
-		self.pok = tuple[2]
 
 	def getCipher(self):
-		return [self.a, self.b,self.pok]
+		return [self.a, self.b]
 
 	def __str__(self):
 		return "Cipher text: ({:d},{:d}) , ({:d},{:d}) ".format(self.a.x, self.a.y,self.b.x,self.b.y)
