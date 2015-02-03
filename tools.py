@@ -209,3 +209,12 @@ def retrieve_list(directory):
     infile = open("./elections/"+directory+"/db.txt", 'r')
     return pickle.load(infile)
 
+def write_result(res,mixed,orig):
+    new_file = open("./pages/elections/result.md", 'w+')
+    new_file.write("Result is : %s\n" % res)
+    new_file.write("\n\n\nNEW\n")
+    for item in mixed:
+        new_file.write("%s\n" % item)
+    new_file.write("\n\nOrignal\n")
+    for item in orig:
+        new_file.write("%s\n" % item)

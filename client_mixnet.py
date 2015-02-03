@@ -14,9 +14,12 @@ def get_list():
     Getting first a public key and then a list of votes
     '''
     __ = ws.recv()
+    print __
     Pk = json.loads(__, object_hook = pk_decoder)
     __ = ws.recv()
+    print __
     votes = json.loads(__, object_hook = cipher_decoder)
+    print votes
     return Pk, votes
 
 
@@ -27,8 +30,9 @@ def anonymize():
     '''
     ws.send("Waiting")
     Pk, votes = get_list()
-    #mixed = zkp.public_mixing(curve, votes, Pk)
-    ws.send(json.dumps([cipher.__dict__ for cipher in votes]))
+    mixed = zkp.public_mixing(curve, votes, Pk)
+    #ws.send("Mixing")
+    ws.send(json.dumps([cipher.__dict__ for cipher in mixed]))
 
 def cipher_decoder(obj):
     a = Coord(obj['a'][0],obj['a'][1])
@@ -40,11 +44,17 @@ def pk_decoder(obj):
     b = Coord(obj['basePoint'][0],obj['basePoint'][1])
     return ecdlp.PublicKey(b,p)
 
-        
-q = 2 ** 221 - 3
-l = 3369993333393829974333376885877457343415160655843170439554680423128
-curve = ecc.Montgomery(117050, 1, q, l)
-ws = create_connection("ws://localhost:8000/ws")
 
-anonymize()
-ws.close()
+if __name__ == "__main__":     
+    q = 2 ** 221 - 3
+    l = 3369993333393829974333376885877457343415160655843170439554680423128
+    curve = ecc.Montgomery(117050, 1, q, l)
+    ws = create_connection("ws://localhost:8000/ws")
+
+    while True:
+        _ = ws.recv()
+        print _
+        if _ == None: 
+            break
+        elif _ == "Mix":
+            anonymize()
