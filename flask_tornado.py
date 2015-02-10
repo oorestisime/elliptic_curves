@@ -1,5 +1,7 @@
-from flask import Flask, render_template
+from flask import Flask, render_template, redirect, request
 from flask_flatpages import FlatPages
+from flask.ext.wtf import Form
+from wtforms import validators, RadioField
 from tornado.wsgi import WSGIContainer
 import tornado.ioloop as ioloop
 import tornado.web as web
@@ -17,6 +19,10 @@ def cipher_decoder(obj):
     a = Coord(obj['a'][0],obj['a'][1])
     b = Coord(obj['b'][0],obj['b'][1])
     return texts.CipherText([a,b])
+
+
+class SimpleForm(Form):
+    certification = RadioField('Label', choices=[('value','description'),('value_two','whatever')])
 
 
 '''
@@ -58,6 +64,7 @@ class WSHandler(websocket.WebSocketHandler):
 '''
 Flask and Tornado config
 '''
+SECRET_KEY = 'development'
 FLATPAGES_AUTO_RELOAD = True
 FLATPAGES_EXTENSION = '.md'
 app = Flask(__name__)
@@ -99,9 +106,28 @@ def hello_world():
     tools.save_list(retrieved,"test")
     return 'This comes from Flask ^_^'
 
+@app.route('/vote', methods=('GET', 'POST'))
+def vote():
+    vote1 = Alice.basePoint
+    vote2 = Coord(-1,-1)
+    form = SimpleForm()
+    form.certification.choices = [(str(vote1),'cand1'),(str(vote2),'cand2')]
+    if form.validate_on_submit():
+        vote = tools.parse_vote(request.form.get('certification'))
+        print vote == vote1
+        print "retrieving list and encrypting vote"
+        retrieved = tools.retrieve_list("test")
+        retrieved.append(Alice.encrypt(vote)[0])
+        #print "lets see",Alice.decrypt(retrieved[-1]) is Alice.basePoint
+        print "saving into file"
+        tools.save_list(retrieved,"test")
+        return "<h1>Success</h1>"
+    #print render_template('vote.html', form=form),form
+    return render_template('vote.html', form=form)
 
 @app.route('/over')
 def over():
+    #print len(tools.retrieve_list("test"))
     tornado.ioloop.IOLoop.instance().add_callback(WSHandler.ask_to_mix)
     return "Check completed elections to find results"
 
@@ -109,7 +135,7 @@ def over():
 def page(path):
     #print pages.get(path)
     page = pages.get_or_404(path)
-    print "res",page
+    #print "res",page
     return render_template('page.html', page=page)
 
 

@@ -12,11 +12,17 @@ For the moment more info on the website: http://oioannou.com/2015/research/
 - Decryption
 - Proof of knowledge of re-encryption
 - DDH verifier
+- public mixing
+- Homomorphic addition and tallying of messages (e-voting)
 
 # Coming
 
 - Other forms of curves
-- Homomorphic addition and tallying of messages (e-voting)
-- mixnets
 - other ZKP
 - message encoding
+
+# Config
+
+- Back-end server on tornado. Mainly using the websocket library
+- Front end on flask. should evolve quick
+- mixnets are python daemons. 

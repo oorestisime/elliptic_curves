@@ -90,6 +90,7 @@ class ElGamal(object):
         i = 0
         while self.curve.double_and_add(self.Pk.basePoint,i) != plain:
             i+=1
+            #print i
         return i
         
 

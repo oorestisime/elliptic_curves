@@ -1,11 +1,11 @@
 import random
 import pickle
 import os
-
+import collections
 '''
 Tools for prime numbers
 '''
-
+Coord = collections.namedtuple("Coord", ["x", "y"])
 
 def rabinMiller(num):
     # Returns True if num is a prime number.
@@ -218,3 +218,15 @@ def write_result(res,mixed,orig):
     new_file.write("\n\nOrignal\n")
     for item in orig:
         new_file.write("%s\n" % item)
+
+def parse_vote(vote):
+    '''
+    Coord(x=702671685038303812736048637156317122042145521167006925162182361873L, 
+        y=2355424066487173446930943433041273479073009200461441713736213318168L)
+    '''
+    __ = vote.split(",")
+    x = __[0][8:].strip("L)")
+    y = __[1][3:].strip("L)")
+    #print "the x",x
+    #print "the y",y
+    return Coord(long(x),long(y)) 
