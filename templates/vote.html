@@ -1,0 +1,11 @@
+
+<h1>Simple Form</h1>
+     <form method="POST" action="/vote">
+         {{form.hidden_tag()}}
+
+         <p>
+             Certification:
+             {{form.certification()}}
+         </p>
+         <p><input type="submit" value="Submit"></p>
+     </form>
