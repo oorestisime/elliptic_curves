@@ -82,28 +82,19 @@ application = web.Application([
 Routing URLS
 '''
 
-@app.route('/testing')
+@app.route('/add_random')
 def hello_world():
     vote1 = Alice.basePoint
     vote2 = Coord(-1,-1)
-    votes = list()
+    votes = tools.retrieve_list("test")
     
     print "\n===== ENCRYPTION of Votes ======\n"
     votes.append(Alice.encrypt(vote1)[0])
-    print votes[0]
     votes.append(Alice.encrypt(vote1)[0])
     votes.append(Alice.encrypt(vote1)[0])
-    print "\n Saving file \n"
-    print votes
+    votes.append(Alice.encrypt(vote2)[0])
+    votes.append(Alice.encrypt(vote2)[0])
     tools.save_list(votes,"test")
-    print "\n Retrieving\n"
-    retrieved = tools.retrieve_list("test")
-    print retrieved
-    print "\n completing\n"
-    retrieved.append(Alice.encrypt(vote2)[0])
-    retrieved.append(Alice.encrypt(vote2)[0])
-    print retrieved[0]
-    tools.save_list(retrieved,"test")
     return 'This comes from Flask ^_^'
 
 @app.route('/vote', methods=('GET', 'POST'))

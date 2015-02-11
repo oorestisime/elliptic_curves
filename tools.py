@@ -215,7 +215,7 @@ def retrieve_list(directory):
 
 def write_result(res,mixed,orig):
     new_file = open("./pages/elections/result.md", 'w+')
-    new_file.write("Result is : %s\n" % res)
+    new_file.write("\n\n##Result is : %s\n" % res)
     new_file.write("\n\n\nNEW\n")
     for item in mixed:
         new_file.write("%s\n" % item)
