@@ -206,8 +206,12 @@ def retrieve_list(directory):
     '''
     read a file and deserialize
     '''
-    infile = open("./elections/"+directory+"/db.txt", 'r')
-    return pickle.load(infile)
+    fname = "./elections/"+directory+"/db.txt"
+    if os.path.isfile(fname): 
+    	infile = open(fname, 'r')
+    	return pickle.load(infile)
+    else:
+    	return list()
 
 def write_result(res,mixed,orig):
     new_file = open("./pages/elections/result.md", 'w+')
