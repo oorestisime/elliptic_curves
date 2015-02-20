@@ -159,7 +159,10 @@ if __name__ == "__main__":
     curve = ecc.Montgomery(117050, 1, q, l)
     Alice = ElGamal(curve)
     vote1 = Alice.basePoint
-    vote2 = Coord(-1,-1)
+    cipher,r = Alice.encrypt(vote1)
+    __ = curve.add(cipher.b,curve.inverse(vote1))
+    print zkp.disjunction_proof(curve,__,Alice.Pk,r)
+    '''vote2 = Coord(-1,-1)
     votes = list()
     
     print "\n===== ENCRYPTION of Votes ======\n"
@@ -176,7 +179,7 @@ if __name__ == "__main__":
     
     print "\n===== DECRYPTION ======\n"
     tally = Alice.tallying(votes)
-    Alice.find_solution(Alice.decrypt(tally))
+    Alice.find_solution(Alice.decrypt(tally))'''
     
     '''
     Weierstrass testing

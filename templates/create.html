@@ -1,0 +1,18 @@
+ <h1>Create an election</h1>
+ {% with messages = get_flashed_messages() %}
+      {% if messages %}
+        <ul>
+        {% for message in messages %}
+            <li>{{ message }} </li>
+        {% endfor %}
+        </ul>
+      {% endif %}
+    {% endwith %}
+  <form action="/new_election" method="post" name="login">
+      {{ form.hidden_tag() }}
+      <p>
+          Please enter a unique name:<br>
+          {{ form.unique_name(size=80) }}<br>
+      </p>
+      <p><input type="submit" value="Create"></p>
+  </form>
