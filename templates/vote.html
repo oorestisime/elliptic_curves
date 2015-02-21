@@ -1,6 +1,28 @@
-<a href="{{url_for('static', filename='soft.zip') }}">Download app to vote</a>
-    <h1>Upload encrypted vote</h1>
+{% extends "base.html" %}
+{% block content %}
+
+<h1>This is the {{name}} election!</h1>
+<hr/>
+<div class="col-md-8">
+{% with messages = get_flashed_messages() %}
+    {% if messages %}
+    <div class="alert alert-success" role="alert">
+        {% for message in messages %}
+            <p>{{ message }}</p>
+        {% endfor %}
+    </div>
+    {% endif %}
+{% endwith %}
+    <h4>Use this form to upload the encryption.txt</h4>
     <form action="{{request.path}}" method=post enctype=multipart/form-data>
-      <p><input type=file name=file>
-         <input type=submit value=Upload>
+      <p><input type=file name=file> <input type=submit value=Upload></p>
     </form>
+</div>
+<div class="col-md-4">
+	<p>In order to vote you need to use a dedicated application.</p>
+	<a href="{{url_for('static', filename='soft.zip') }}">Download application to vote.</a>
+	<hr/>
+	<p>Use python soft.py 0 to vote for the first candidate</p>
+	<p>Use python soft.py 1 to vote for the second candidate</p>
+</div>
+{% endblock content %}

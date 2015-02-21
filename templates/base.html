@@ -2,12 +2,16 @@
 <html>
 <head>
     <meta charset="utf-8">
-    <title>E-voting</title>
+    <title>E-voting Elliptic Curves</title>
+    <link rel="stylesheet" href="{{ url_for("static", filename="css/bootstrap.min.css") }}" />
+    <link rel="stylesheet" href="{{ url_for("static", filename="css/style.css") }}" />
 </head>
 <body>
-<div style="margin:3em">
+<div class="container">
+<div class="row">
 {% block content %}
 {% endblock content %}
+</div>
 </div>
 </body>
 </html>

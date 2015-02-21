@@ -1,18 +1,24 @@
- <h1>Create an election</h1>
- {% with messages = get_flashed_messages() %}
+{% extends "base.html" %}
+{% block content %}
+<h1>Create an election!</h1>
+<hr/>
+<div class="col-md-8">
+{% with messages = get_flashed_messages() %}
       {% if messages %}
-        <ul>
+      <div class="alert alert-warning" role="alert">
         {% for message in messages %}
-            <li>{{ message }} </li>
+          <p>{{ message }} </p>
         {% endfor %}
-        </ul>
+      </div>
       {% endif %}
-    {% endwith %}
-  <form action="/new_election" method="post" name="login">
-      {{ form.hidden_tag() }}
-      <p>
-          Please enter a unique name:<br>
-          {{ form.unique_name(size=80) }}<br>
-      </p>
-      <p><input type="submit" value="Create"></p>
-  </form>
+{% endwith %}
+<form action="/new_election" method="post" name="login">
+    {{ form.hidden_tag() }}
+    <p>
+        Please enter a unique name:<br>
+        {{ form.unique_name(size=30) }}<br>
+    </p>
+    <p><input type="submit" value="Create"></p>
+</form>
+</div>
+{% endblock content %}

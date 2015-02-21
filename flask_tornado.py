@@ -91,6 +91,11 @@ application = web.Application([
 Routing URLS
 '''
 
+@app.route("/")
+def index():
+    elecs = [x[0].replace("./elections/","",1) for x in os.walk("./elections")]
+    return render_template('index.html',election_list=elecs[1:])
+
 @app.route('/add_random')
 def hello_world():
     vote1 = Alice.basePoint
@@ -118,6 +123,10 @@ def new_election():
         return redirect('/new_election')
     return render_template('create.html',form=form)
 
+@app.route('/vote/')
+def voting():
+    redirect("/")
+
 @app.route('/vote/<election_name>/', methods=('GET', 'POST'))
 def vote(election_name):
     if not os.path.exists("elections/"+election_name):
@@ -139,8 +148,8 @@ def vote(election_name):
             print "saving into file"
             tools.save_list(retrieved,election_name)
             print "length now",len(tools.retrieve_list(election_name))
-            return "<h1>Success</h1>"
-    #print render_template('vote.html', form=form),form
+            flash("Your vote has been registered!")
+            return render_template('vote.html',name=election_name)
     return render_template('vote.html',name=election_name)
 
 @app.route('/over/<election_name>/')
@@ -183,7 +192,7 @@ def clear():
 
 
 if __name__ == "__main__":
-    clear()
+    #clear()
     application.listen(8000)
     q = 2 ** 221 - 3
     l = 3369993333393829974333376885877457343415160655843170439554680423128

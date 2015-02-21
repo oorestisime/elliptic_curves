@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block content %}
+<h1>Welcome to e-voting!</h1>
+<hr/>
+<div class="col-md-8">
+<p>This application uses elliptic curves to encrypt votes. Find the code <a href="https://github.com/oorestisime/elliptic_curves">here</a></p>
+<p>Features:</p>
+<ul>
+<li>Montgomery, Weierstrass and Edwards curves</li>
+<li>Client based encryption</li>
+<li>Public re-encryption and permutation</li>
+<li>Zero knowledge proofs for encryption and re-encryption</li>
+</ul>
+</div>
+<div class="col-md-4">
+	<h4>List of ongoing elections!</h4>
+	<ul>
+	{% for elec in election_list %}
+	<li><a href={{url_for("vote",election_name=elec)}}>{{elec}}</a></li>
+	{% endfor %}
+	<ul>
+</div>
+
+{% endblock content %}
