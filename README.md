@@ -1,25 +1,25 @@
+#General
+
+This project is part of my research project for my Master's degree. 
+For the moment more info on the website: http://oioannou.com/2015/research/
+
 #Elliptic Curves
 
-This is a module on elliptic curves using python. 
-For the moment more info on the website: http://oioannou.com/2015/research/
+All of the features are implemented with elliptic curves using python. 
 
 # Features
 
 - Edwards curves
 - Montgomery curves
+- Weierstrass
 - Encryption
 - Re-encryption
 - Decryption
+- Disjucntion proof of encryption
 - Proof of knowledge of re-encryption
 - DDH verifier
 - public mixing
 - Homomorphic addition and tallying of messages (e-voting)
-
-# Coming
-
-- Other forms of curves
-- other ZKP
-- message encoding
 
 # Config
 
