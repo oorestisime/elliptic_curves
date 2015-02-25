@@ -18,6 +18,8 @@ import json
 import zipfile
 import os
 import pickle
+import time
+import random
 Coord = collections.namedtuple("Coord", ["x", "y"])
 
 def cipher_decoder(obj):
@@ -51,7 +53,9 @@ class WSHandler(websocket.WebSocketHandler):
             votes = json.loads(message, object_hook = cipher_decoder)
             tally = Alice.tallying(votes)
             print "searching"
+            start_time = time.time()
             res = Alice.find_solution(Alice.decrypt(tally))
+            print("--- %s seconds ---" % str(time.time() - start_time))
             print "\nThe candidate 1 has, ",res," votes out of ",len(votes),"\n"
             tools.write_result(res,votes,tools.retrieve_list(WSHandler.election_name))
             #tornado.ioloop.IOLoop.instance().add_callback(result,res)
@@ -103,11 +107,13 @@ def hello_world():
     votes = tools.retrieve_list("test")
     
     print "\n===== ENCRYPTION of Votes ======\n"
-    votes.append(Alice.encrypt(vote1)[0])
-    votes.append(Alice.encrypt(vote1)[0])
-    votes.append(Alice.encrypt(vote1)[0])
-    votes.append(Alice.encrypt(vote2)[0])
-    votes.append(Alice.encrypt(vote2)[0])
+    start_time = time.time()
+    for i in range(0,10):
+        if random.random() < 0.5:
+            votes.append(Alice.encrypt(vote1)[0])
+        else:
+            votes.append(Alice.encrypt(vote2)[0])
+    print("--- %s seconds ---" % str(time.time() - start_time))
     tools.save_list(votes,"test")
     return 'Added Random votes'
 

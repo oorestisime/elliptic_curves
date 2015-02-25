@@ -6,6 +6,7 @@ import elGamal as ecdlp
 import curve as ecc
 import zkp as zkp
 import texts as texts
+import time
 
 Coord = collections.namedtuple("Coord", ["x", "y"])
 
@@ -28,9 +29,13 @@ def anonymize():
     Getting a list, then mixing in public 
     and returning the result
     '''
+    start_time = time.time()
     ws.send("Waiting")
     Pk, votes = get_list()
+    print("--- %s seconds ---" % str(time.time() - start_time))
+    start_time = time.time()
     mixed = zkp.public_mixing(curve, votes, Pk)
+    print("--- %s seconds ---" % str(time.time() - start_time))
     #ws.send("Mixing")
     ws.send(json.dumps([cipher.__dict__ for cipher in mixed]))
 

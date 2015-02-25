@@ -209,7 +209,7 @@ class Montgomery(Curve):
         Returns True if point on Curve
         Returns False otherwise
         '''
-        print p
+        #print p
         if p.x == 0 and p.y == 1:
             return True
         else:

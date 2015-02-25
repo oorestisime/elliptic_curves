@@ -88,7 +88,7 @@ def chaum_pedersen_ddh(curve, Pk, w, u, r):
     left_hand2 = curve.double_and_add(y, t)
     right_hand2 = curve.add(b, curve.double_and_add(u, c))
     if((left_hand == right_hand) and (left_hand2 == right_hand2)):
-        print "DDH verified"
+        #print "DDH verified"
         return True
     else:
         print "Proof not verified"

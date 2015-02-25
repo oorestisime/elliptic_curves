@@ -7,6 +7,7 @@ import texts as texts
 import math as math
 import zkp as zkp
 import hashlib
+import time
 Coord = collections.namedtuple("Coord", ["x", "y"])
 
 
@@ -159,13 +160,34 @@ if __name__ == "__main__":
     curve = ecc.Montgomery(117050, 1, q, l)
     Alice = ElGamal(curve)
     vote1 = Alice.basePoint
-    cipher,r = Alice.encrypt(vote1)
+    '''cipher,r = Alice.encrypt(vote1)
     __ = curve.add(cipher.b,curve.inverse(vote1))
-    print zkp.disjunction_proof(curve,__,Alice.Pk,r)
-    '''vote2 = Coord(-1,-1)
+    print zkp.disjunction_proof(curve,__,Alice.Pk,r)'''
+    vote2 = Coord(-1,-1)
     votes = list()
+    c = Alice.encrypt(vote1)[0]
+    start_time = time.time()
+    print Alice.decrypt(c)
+    print("--- %s seconds ---" % str(time.time() - start_time))
     
-    print "\n===== ENCRYPTION of Votes ======\n"
+    for i in range(0,100):
+        if random.random() < 0.5:
+            votes.append(Alice.encrypt(vote1)[0])
+        else:
+            votes.append(Alice.encrypt(vote2)[0])
+    print("--- %s seconds ---" % str(time.time() - start_time))
+    '''for i in range(0,10):
+        if random.random() < 0.5:
+            print "hre"
+            print Alice.encrypt(vote1)[1]
+            votes.append(Alice.encrypt(vote1)[1])
+        else:
+            print "there"
+            cipher,_=Alice.encrypt(vote1)
+            votes.append(cipher)
+    print("--- %s seconds ---" % str(time.time() - start_time))
+    print votes'''
+    '''print "\n===== ENCRYPTION of Votes ======\n"
     votes.append(Alice.encrypt(vote1)[0])
     votes.append(Alice.encrypt(vote1)[0])
     votes.append(Alice.encrypt(vote1)[0])
