@@ -48,14 +48,15 @@ class ElGamal(object):
         Generating a KeySet (Public and Private Key)
         '''
         self.Sk = PrivateKey(self.curve.order)
-        self.Pk = PublicKey(self.basePoint, self.curve.double_and_add(self.basePoint, self.Sk.k))
+        self.Pk = PublicKey(
+            self.basePoint, self.curve.double_and_add(self.basePoint, self.Sk.k))
 
     def encrypt(self, P):
         '''
         Encrypt a point P
         '''
         assert self.curve.is_valid(
-            P) is True or P is not Coord(-1,-1), "Trying to encrypt point not on curve"
+            P) is True or P is not Coord(-1, -1), "Trying to encrypt point not on curve"
         r = random.randint(1, self.curve.order)
         R = self.curve.double_and_add(self.basePoint, r)
         __ = self.curve.double_and_add(self.Pk.point, r)
@@ -72,28 +73,27 @@ class ElGamal(object):
         plaintext = self.curve.add(invPoint, c)
         return plaintext
 
-    def tallying(self,votes):
+    def tallying(self, votes):
         '''
         Homomorphic tallying
 
         '''
-        _b = Coord(-1,-1)
-        _a = Coord(-1,-1)
+        _b = Coord(-1, -1)
+        _a = Coord(-1, -1)
         for cipher in votes:
-            _b = self.curve.add(_b,cipher.b)
-            _a = self.curve.add(_a,cipher.a)
-        return texts.CipherText([_a,_b]) 
+            _b = self.curve.add(_b, cipher.b)
+            _a = self.curve.add(_a, cipher.a)
+        return texts.CipherText([_a, _b])
 
-    def find_solution(self,plain):
+    def find_solution(self, plain):
         '''
         Solving Q=xP finding x
-        '''    
+        '''
         i = 0
-        while self.curve.double_and_add(self.Pk.basePoint,i) != plain:
-            i+=1
-            #print i
+        while self.curve.double_and_add(self.Pk.basePoint, i) != plain:
+            i += 1
+            # print i
         return i
-        
 
 
 class PrivateKey (object):
@@ -117,7 +117,7 @@ class PublicKey (object):
     It contains a point which comes from k*Basepoint and the Basepoint
     '''
 
-    def __init__(self, b,p):
+    def __init__(self, b, p):
         self.basePoint = b
         self.point = p
 
@@ -163,14 +163,14 @@ if __name__ == "__main__":
     '''cipher,r = Alice.encrypt(vote1)
     __ = curve.add(cipher.b,curve.inverse(vote1))
     print zkp.disjunction_proof(curve,__,Alice.Pk,r)'''
-    vote2 = Coord(-1,-1)
+    vote2 = Coord(-1, -1)
     votes = list()
     c = Alice.encrypt(vote1)[0]
     start_time = time.time()
     print Alice.decrypt(c)
     print("--- %s seconds ---" % str(time.time() - start_time))
-    
-    for i in range(0,100):
+
+    for i in range(0, 100):
         if random.random() < 0.5:
             votes.append(Alice.encrypt(vote1)[0])
         else:
@@ -202,7 +202,7 @@ if __name__ == "__main__":
     print "\n===== DECRYPTION ======\n"
     tally = Alice.tallying(votes)
     Alice.find_solution(Alice.decrypt(tally))'''
-    
+
     '''
     Weierstrass testing
     '''
@@ -221,4 +221,3 @@ if __name__ == "__main__":
     print "\n===== DECRYPTION ======\n"
     plain = Alice.decrypt(re_cipher)
     print "plain text was", point, " i got ", plain, point==plain'''
-    

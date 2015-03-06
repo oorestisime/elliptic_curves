@@ -13,7 +13,7 @@ Coord = collections.namedtuple("Coord", ["x", "y"])
 
 class Curve(object):
 
-    def __init__(self, a, b, q,order):
+    def __init__(self, a, b, q, order):
         pass
 
     def at(self, x, sbit):
@@ -37,7 +37,7 @@ class Curve(object):
 
 class Weierstrass(Curve):
 
-    def __init__(self, a, b, q,order):
+    def __init__(self, a, b, q, order):
         """elliptic curve as: (y**2 = x**3 + a * x + b) mod q
         - a, b: params of curve formula
         - q: prime number
@@ -82,7 +82,7 @@ class Weierstrass(Curve):
         elif P.x == Q.x and P.y == Q.y:
             return self.double(P)
         elif P == self.inverse(Q):
-            return Coord(-1,-1)
+            return Coord(-1, -1)
         else:
             inv = tools.inversemodp(Q.x - P.x, self.q)
             pente = ((Q.y - P.y) * inv) % self.q
@@ -151,7 +151,7 @@ class Weierstrass(Curve):
 
 class Montgomery(Curve):
 
-    def __init__(self, a, b, q,order):
+    def __init__(self, a, b, q, order):
         """
         elliptic curve in the Montgomert form:
         (b*y**2 = x**3 +A x**2 +x mod q
@@ -170,12 +170,12 @@ class Montgomery(Curve):
                 sbit is the sign bit
         """
         assert x < self.q
-        ysq = (((x ** 3) + (self.a * x**2) + x)
-        * tools.inversemodp(self.b, self.q)) % self.q
+        ysq = (((x ** 3) + (self.a * x ** 2) + x)
+               * tools.inversemodp(self.b, self.q)) % self.q
         root = tools.mod_sqrt(ysq, self.q)
         # print root
         if root == 0:
-            #print "no point at this x coordinate"
+            # print "no point at this x coordinate"
             return -1
         return Coord(x, root) if sbit is True else Coord(x, -root % self.q)
 
@@ -194,13 +194,16 @@ class Montgomery(Curve):
         elif Q.x == P.x:
             return Coord(-1, -1)
         else:
-            _ = ((Q.x - P.x)**2) % self.q
-            __ = ((self.b * (Q.y - P.y) ** 2) * tools.inversemodp(_, self.q)) % self.q
+            _ = ((Q.x - P.x) ** 2) % self.q
+            __ = ((self.b * (Q.y - P.y) ** 2)
+                  * tools.inversemodp(_, self.q)) % self.q
             x = (__ - self.a - P.x - Q.x) % self.q
             xx = Q.x - P.x
             yy = Q.y - P.y
-            __ = (((2 * P.x + Q.x+self.a) * yy) * tools.inversemodp(xx, self.q)) % self.q
-            __ = (__ - (self.b * yy**3) * tools.inversemodp(xx**3, self.q)) % self.q
+            __ = (((2 * P.x + Q.x + self.a) * yy)
+                  * tools.inversemodp(xx, self.q)) % self.q
+            __ = (__ - (self.b * yy ** 3)
+                  * tools.inversemodp(xx ** 3, self.q)) % self.q
             y = (__ - P.y) % self.q
             return Coord(x, y)
 
@@ -209,12 +212,12 @@ class Montgomery(Curve):
         Returns True if point on Curve
         Returns False otherwise
         '''
-        #print p
+        # print p
         if p.x == 0 and p.y == 1:
             return True
         else:
             l = (p.y ** 2) % self.q
-            r = ((p.x ** 3) + self.a * p.x**2 + p.x) % self.q
+            r = ((p.x ** 3) + self.a * p.x ** 2 + p.x) % self.q
             return l == r
 
     def double(self, P):
@@ -225,13 +228,15 @@ class Montgomery(Curve):
             return P
         elif P.y == 0:
             return Coord(-1, -1)
-        __ = (4*P.x*(P.x**2 + self.a * P.x + 1)) % self.q
+        __ = (4 * P.x * (P.x ** 2 + self.a * P.x + 1)) % self.q
         inv = tools.inversemodp(__, self.q)
-        x = (((P.x**2 - 1)**2) * inv) % self.q
+        x = (((P.x ** 2 - 1) ** 2) * inv) % self.q
         __ = (2 * self.b * P.y) % self.q
         inv = tools.inversemodp(__, self.q)
-        __2 = ((2 * P.x + P.x + self.a) * (3 * P.x**2 + 2 * self.a * P.x + 1) * (inv)) % self.q
-        __3 = ((self.b * (3 * P.x**2 + 2 * self.a * P.x + 1)**3)*tools.inversemodp(__**3, self.q)) % self.q
+        __2 = ((2 * P.x + P.x + self.a) *
+               (3 * P.x ** 2 + 2 * self.a * P.x + 1) * (inv)) % self.q
+        __3 = ((self.b * (3 * P.x ** 2 + 2 * self.a * P.x + 1) ** 3)
+               * tools.inversemodp(__ ** 3, self.q)) % self.q
         y = (__2 - __3 - P.y) % self.q
         return Coord(x, y)
 
@@ -262,7 +267,7 @@ class Montgomery(Curve):
 
 class Edwards(object):
 
-    def __init__(self, d, a, q,order):
+    def __init__(self, d, a, q, order):
         '''
         Edwards curve: ax^2 + y^2 = 1 + dx^2y^2
         q: prime number
@@ -287,7 +292,7 @@ class Edwards(object):
         # print "y2 = ",yy
         root = tools.mod_sqrt(yy, self.q)
         if root == 0:
-            #print "no point at this x coordinate"
+            # print "no point at this x coordinate"
             return -1
         return Coord(x, root) if sbit is True else Coord(x, -root % self.q)
 

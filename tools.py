@@ -7,6 +7,7 @@ Tools for prime numbers
 '''
 Coord = collections.namedtuple("Coord", ["x", "y"])
 
+
 def rabinMiller(num):
     # Returns True if num is a prime number.
     s = num - 1
@@ -164,6 +165,7 @@ def legendre_symbol(a, p):
     ls = pow(a, (p - 1) / 2, p)
     return -1 if ls == p - 1 else ls
 
+
 def baby_step_giant_step(curve, Q, l):
     '''
     Baby step giant step. find x such as Q=xP
@@ -190,7 +192,8 @@ def baby_step_giant_step(curve, Q, l):
         i += 1
     return "Not found"
 
-def pollard(curve, Q,P):
+
+def pollard(curve, Q, P):
     P = P
     order = curve.order
     q = curve.q
@@ -208,11 +211,12 @@ def pollard(curve, Q,P):
         i += 1
         if len(points) < 2 * i:
             # generate missing points
-            points, a_b = curve.fill_points(points, a_b, 2 * i+1, P, Q, q)
-        #print points
-        #print i,2*i,points[i],points[2 * i]
-        found = points[i].x == points[2 * i].x and points[i].y == points[2 * i].y
-        if (a_b[i] == a_b[2*i]):
+            points, a_b = curve.fill_points(points, a_b, 2 * i + 1, P, Q, q)
+        # print points
+        # print i,2*i,points[i],points[2 * i]
+        found = points[i].x == points[
+            2 * i].x and points[i].y == points[2 * i].y
+        if (a_b[i] == a_b[2 * i]):
             found = False
     '''for z,item in enumerate(points):
         print z,item
@@ -223,23 +227,25 @@ def pollard(curve, Q,P):
     else:
         a, b = a_b[i]
         _a, _b = a_b[2 * i]
-        print a,b,_a,_b 
+        print a, b, _a, _b
     return ((_a - a) * tools.inversemodp((b - _b), order)) % order
 
-def fill_points(curve,points, a_b, i, P, Q, q):
+
+def fill_points(curve, points, a_b, i, P, Q, q):
     '''
     Completing points up to i.
     Used in pollards rho algorithm
     '''
     z = len(points)
     while z < i:
-        _a,_b = tools.which_group(points[z-1],a_b[z-1],q)
-        a_b.insert((z),[_a, _b])
-        points.insert((z),curve.add(
+        _a, _b = tools.which_group(points[z - 1], a_b[z - 1], q)
+        a_b.insert((z), [_a, _b])
+        points.insert((z), curve.add(
             curve.double_and_add(P, _a), curve.double_and_add(Q, _b)))
-        z+=1
-    return points,a_b
-    
+        z += 1
+    return points, a_b
+
+
 def which_group(R, a_b, q):
     '''
     A method for determining in which group is a point.
@@ -258,42 +264,47 @@ def which_group(R, a_b, q):
         _b = a_b[1]
     return _a, _b
 
+
 def create_file(name):
     '''
     Creating folder and file inside elections. 
     Storing inside the ciphertexts
     '''
-    directory = "./elections/"+name
+    directory = "./elections/" + name
     if not os.path.exists(directory):
         os.makedirs(directory)
-    new_file = open("./elections/"+name+"/db.txt", 'w+')
+    new_file = open("./elections/" + name + "/db.txt", 'w+')
     new_file.close
 
-def save_list(ciphers,directory):
+
+def save_list(ciphers, directory):
     '''
     Adding a ciphertext inside the db
     '''
-    output = open("./elections/"+directory+"/db.txt", 'w+')
-    pickle.dump(ciphers,output)
-    output.close() 
+    output = open("./elections/" + directory + "/db.txt", 'w+')
+    pickle.dump(ciphers, output)
+    output.close()
 
-def write_file(item,infile):
-    output = open("./"+infile+".txt", 'w+')
-    pickle.dump(item,output)
-    output.close() 
+
+def write_file(item, infile):
+    output = open("./" + infile + ".txt", 'w+')
+    pickle.dump(item, output)
+    output.close()
+
 
 def retrieve_list(directory):
     '''
     read a file and deserialize
     '''
-    fname = "./elections/"+directory+"/db.txt"
-    if os.path.isfile(fname): 
-    	infile = open(fname, 'r')
-    	return pickle.load(infile)
+    fname = "./elections/" + directory + "/db.txt"
+    if os.path.isfile(fname):
+        infile = open(fname, 'r')
+        return pickle.load(infile)
     else:
-    	return list()
+        return list()
 
-def write_result(res,mixed,orig):
+
+def write_result(res, mixed, orig):
     new_file = open("./pages/elections/result.md", 'w+')
     new_file.write("\n\n##Result is : %s\n" % res)
     new_file.write("\n\n\nNEW\n")
@@ -303,6 +314,7 @@ def write_result(res,mixed,orig):
     for item in orig:
         new_file.write("%s\n" % item)
 
+
 def parse_vote(vote):
     '''
     Coord(x=702671685038303812736048637156317122042145521167006925162182361873L, 
@@ -311,6 +323,6 @@ def parse_vote(vote):
     __ = vote.split(",")
     x = __[0][8:].strip("L)")
     y = __[1][3:].strip("L)")
-    #print "the x",x
-    #print "the y",y
-    return Coord(long(x),long(y)) 
+    # print "the x",x
+    # print "the y",y
+    return Coord(long(x), long(y))

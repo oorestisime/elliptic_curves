@@ -2,6 +2,7 @@
 
 This project is part of my research project for my Master's degree. 
 For the moment more info on the website: http://oioannou.com/2015/research/
+You can check (in french) the presentation and my report on this subject http://oioannou.com/2015/blog/research/
 
 #Elliptic Curves
 
@@ -25,4 +26,5 @@ All of the features are implemented with elliptic curves using python.
 
 - Back-end server on tornado. Mainly using the websocket library
 - Front end on flask. should evolve quick
-- mixnets are python daemons. 
+- mixnets are python daemons.
+

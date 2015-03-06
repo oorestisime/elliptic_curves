@@ -3,39 +3,41 @@ import random
 import texts as texts
 import hashlib
 
+
 def reencrypt(curve, Cipher, Pk):
-        '''
-        Reencrypt cipher with fresh randomness
+    '''
+    Reencrypt cipher with fresh randomness
 
-        R: r*B
-        C: P + Pub*r = P + B*r*s
+    R: r*B
+    C: P + Pub*r = P + B*r*s
 
-        To re-encrypt:
+    To re-encrypt:
 
-        R: r*B+r2*B = B(r+r2)
-        C: P + B*r*s + B*r2*s = P + B*s*(r+r2)
-        '''
-        R, c = Cipher.getCipher()
-        r = random.randint(1, curve.order)
-        R2 = curve.add(R, curve.double_and_add(Pk.basePoint, r))
-        __ = curve.double_and_add(Pk.point, r)
-        cipher2 = curve.add(__, c)
-        return texts.CipherText([R2, cipher2]), r
+    R: r*B+r2*B = B(r+r2)
+    C: P + B*r*s + B*r2*s = P + B*s*(r+r2)
+    '''
+    R, c = Cipher.getCipher()
+    r = random.randint(1, curve.order)
+    R2 = curve.add(R, curve.double_and_add(Pk.basePoint, r))
+    __ = curve.double_and_add(Pk.point, r)
+    cipher2 = curve.add(__, c)
+    return texts.CipherText([R2, cipher2]), r
 
-def disjunction_proof(curve,cipher, Pk, randomness):
+
+def disjunction_proof(curve, cipher, Pk, randomness):
     '''
     Proof of disjunction. c1 or c2
     '''
     # Simulating proof for cipher2
     x_2 = random.randint(1, curve.order)
-    h_2 = curve.double_and_add(Pk.basePoint,x_2)
+    h_2 = curve.double_and_add(Pk.basePoint, x_2)
     s_2 = random.randint(1, curve.order)
     c_2 = random.randint(1, curve.order)
     q = random.randint(1, curve.order)
     # Calculating commitments
-    y_2 = curve.add(curve.double_and_add(Pk.basePoint,s_2),
-        curve.inverse(curve.double_and_add(h_2,c_2)))
-    y_1 = curve.double_and_add(Pk.point,q)
+    y_2 = curve.add(curve.double_and_add(Pk.basePoint, s_2),
+                    curve.inverse(curve.double_and_add(h_2, c_2)))
+    y_1 = curve.double_and_add(Pk.point, q)
     # Challenge by honest verifier. (Fiat-Shamir)
     hash_object = hashlib.sha512(str(y_1.x))
     hex_dig = hash_object.hexdigest()
@@ -46,24 +48,25 @@ def disjunction_proof(curve,cipher, Pk, randomness):
 
     # verifying proofs
 
-    print "c1+c2=c",c_1,c_2, c == (c_1+c_2) %curve.order
-    left_proof_1 = curve.double_and_add(Pk.point,s_1)
-    right_proof_1 = curve.add(y_1,curve.double_and_add(cipher,c_1))
-    print "Proof logarithme 1",s_1,Pk.basePoint,right_proof_1
+    print "c1+c2=c", c_1, c_2, c == (c_1 + c_2) % curve.order
+    left_proof_1 = curve.double_and_add(Pk.point, s_1)
+    right_proof_1 = curve.add(y_1, curve.double_and_add(cipher, c_1))
+    print "Proof logarithme 1", s_1, Pk.basePoint, right_proof_1
     if left_proof_1 == right_proof_1:
         print True
     else:
         print "False"
         return False
-    left_proof_2 = curve.double_and_add(Pk.basePoint,s_2)
-    right_proof_2 = curve.add(y_2,curve.double_and_add(h_2,c_2))
-    print "Proof logarithme 2",s_2,Pk.basePoint,right_proof_2
+    left_proof_2 = curve.double_and_add(Pk.basePoint, s_2)
+    right_proof_2 = curve.add(y_2, curve.double_and_add(h_2, c_2))
+    print "Proof logarithme 2", s_2, Pk.basePoint, right_proof_2
     if left_proof_2 == right_proof_2:
         print "True"
         return True
     else:
         print "False"
         return False
+
 
 def chaum_pedersen_ddh(curve, Pk, w, u, r):
     '''
@@ -88,11 +91,12 @@ def chaum_pedersen_ddh(curve, Pk, w, u, r):
     left_hand2 = curve.double_and_add(y, t)
     right_hand2 = curve.add(b, curve.double_and_add(u, c))
     if((left_hand == right_hand) and (left_hand2 == right_hand2)):
-        #print "DDH verified"
+        # print "DDH verified"
         return True
     else:
         print "Proof not verified"
         return False
+
 
 def reencrypt_proof(curve, c1, c2, Pk, randomness):
     '''
@@ -111,7 +115,7 @@ def reencrypt_proof(curve, c1, c2, Pk, randomness):
     return chaum_pedersen_ddh(curve, Pk, first, second, randomness)
 
 
-def public_mixing(curve,votes,Pk):
+def public_mixing(curve, votes, Pk):
     '''
     Public mixing shuffles a list and re-ecrypts the votes.
     It calculates the necessary prooves of re-encryption
@@ -120,7 +124,7 @@ def public_mixing(curve,votes,Pk):
     '''
     mixed = list()
     for cipher in votes:
-        re_cipher, randomness = reencrypt(curve,cipher,Pk)
-        print "Re-encryption: ",reencrypt_proof(curve, cipher, re_cipher, Pk, randomness)
+        re_cipher, randomness = reencrypt(curve, cipher, Pk)
+        print "Re-encryption: ", reencrypt_proof(curve, cipher, re_cipher, Pk, randomness)
         mixed.append(re_cipher)
     return sorted(mixed, key=lambda k: random.random())
